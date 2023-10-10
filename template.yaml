@@ -1,0 +1,31 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  pdf-create
+
+Globals:
+  Function:
+    Timeout: 20
+    MemorySize: 256
+
+Resources:
+  PdfCreateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+  CreatePdf:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: pdfcreate/
+      Handler: pdf_create.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Layers:
+        - arn:aws:lambda:eu-west-2:347599033421:layer:wkhtmltopdf-0_12_6:1
+      Environment:
+        Variables:
+          PDF_BUCKET_NAME: !Ref PdfCreateBucket
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref PdfCreateBucket
